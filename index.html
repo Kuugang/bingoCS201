@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo</title>
+    <script src = "https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing: border-box;
+        }
+        body {
+            width: 100%;
+            height: 100vh; 
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+        }
+        td{
+            width: 50px;
+            height: 50px;
+            border:1px black solid;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <form id = "gameCodeForm"action="">
+        <input id = "gameCode" type="text" placeholder="Enter Game Code" required>
+        <!-- <button>Change Game code</button> -->
+    </form>
+    <button id = "viewDashBoard">View DashBoard</button>
+
+    <h1 id = "codeTxt">Game Code: </h1>
+
+    <table class = "card">
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+    </table> 
+    <button id = "getCard">Get Card</button>
+    <button id = "checkCard">Check Card</button>
+    <script>
+         $(document).ready(function(){
+            let code;
+            let card = []
+            let token;
+
+            // $("#gameCodeForm").submit(function(e){
+            //     e.preventDefault();
+            //     code = $("#gameCode").val();
+            //     $("#codeTxt").html("Game Code: " + code);
+            // })
+            $("#gameCode").on("change", function(){
+                code = $("#gameCode").val()
+                $("#codeTxt").html("Game Code: " + code);
+            })
+
+            $('#viewDashBoard').click(function(e){
+                e.preventDefault();
+                window.open(`http://www.hyeumine.com/bingodashboard.php?bcode=${code}`, "_blank");
+            })
+
+            $("#getCard").bind('click', function(){
+                $.ajax({
+                    url:`http://www.hyeumine.com/getcard.php?bcode=${code}`,
+                    method:"GET",
+                    error: function(xhr, status, error){
+                        alert("Error!" + xhr.status);
+                    },
+                    success: (data) =>{
+                        state = 1;
+                        data = JSON.parse(data);
+                        token = data.playcard_token;
+                        var cells = document.querySelectorAll('.card td');
+                        var index = 0;
+                        try{
+                            card = [
+                                data.card.B,
+                                data.card.I,
+                                data.card.N,
+                                data.card.G,
+                                data.card.O
+                            ]
+                            for (var i = 0; i < 5; i++) {
+                                for(var j = 0; j < 5; j++){
+                                    cells[index].innerHTML = card[j][i]; 
+                                    index++;
+                                }
+                            }
+                        }catch(e){
+                            alert("Something went wrong!")
+                        }
+                    } 
+                })
+            })
+
+            $("#checkCard").bind('click', function(){
+                if(token){
+                    $.ajax({
+                        url: `http://www.hyeumine.com/checkwin.php?playcard_token=${token}`,
+                        method: 'GET',
+                        success: (data) =>{
+                            console.log(data)
+                            if(data == 1){
+                                alert("BINGO")
+                            }else{
+                                alert("Not Winning Card")
+                            }
+                        }
+                    })
+                }else{
+                    alert("Something went wrong")
+                }
+            })
+         })
+    </script>
+</body>
+</html>
